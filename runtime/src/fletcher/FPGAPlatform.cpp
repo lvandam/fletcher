@@ -56,6 +56,36 @@ uint64_t FPGAPlatform::prepare_column_chunks(const std::shared_ptr<arrow::Column
   return bytes;
 }
 
+uint64_t FPGAPlatform::prepare_column_chunks(const std::vector<std::shared_ptr<arrow::Column>>& columns)
+{
+  uint64_t bytes = 0;
+
+  std::vector<BufConfig> host_bufs;
+  std::vector<BufConfig> dest_bufs;
+
+  for(auto column : columns) {
+    auto chunks = column->data()->chunks();
+    auto chunk = chunks[0];
+    std::vector<BufConfig> chunk_config;
+    append_chunk_buffer_config(chunk->data(), column->field(), chunk_config);
+    host_bufs.insert(host_bufs.end(), chunk_config.begin(), chunk_config.end());
+  }
+
+  LOGD("Host side buffers:" << std::endl << ToString(host_bufs));
+
+  bytes += this->organize_buffers(host_bufs, dest_bufs);
+
+  LOGD("Destination buffers: " << std::endl << ToString(dest_bufs));
+
+  size_t nbufs = host_bufs.size();
+
+  this->_argument_offset += nbufs;
+
+  LOGD("Configured " << nbufs << " buffers. " "Argument offset starting at " << this->argument_offset());
+
+  return bytes;
+}
+
 uint64_t FPGAPlatform::argument_offset()
 {
   if (this->_argument_offset == UC_REG_BUFFERS) {
@@ -72,13 +102,13 @@ std::string FPGAPlatform::name()
 }
 
 /*
- * The default implementation of Arrow always allocates a validity bitmap, even 
- * when a field is specified for which nullable=false. Thus, we need the field 
+ * The default implementation of Arrow always allocates a validity bitmap, even
+ * when a field is specified for which nullable=false. Thus, we need the field
  * specification of which we expect corresponds to this ArrayData.
  *
- * The first buffer in the buffer list of an ArrayData is therefore always a 
- * validity bitmap buffer. Only in the case of binary and (utf8) string data, 
- * the ArrayData holds three buffers. There, the list elements themselves are 
+ * The first buffer in the buffer list of an ArrayData is therefore always a
+ * validity bitmap buffer. Only in the case of binary and (utf8) string data,
+ * the ArrayData holds three buffers. There, the list elements themselves are
  * always valid and in fact no validity bitmap is allocated at all.
  *
  * TODO: This quirky implementation should be improved.

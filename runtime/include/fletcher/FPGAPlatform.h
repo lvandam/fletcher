@@ -45,7 +45,7 @@ namespace fletcher {
 /**
  * \class FPGAPlatform
  * \brief Abstract class to represent an FPGA platform.
- * 
+ *
  * Users should implement the member functions of this class to allow
  * a UserCore to write/read memory mapped slave registers and to
  * organize buffers. This may or may not include copying the Arrow
@@ -57,7 +57,7 @@ class FPGAPlatform
   virtual ~FPGAPlatform(){};
 
   /**
-   * \brief Write a 64-bit value to a memory mapped slave register at 
+   * \brief Write a 64-bit value to a memory mapped slave register at
    * some offset (address).
    */
   virtual int write_mmio(uint64_t offset, fr_t value)=0;
@@ -70,15 +70,16 @@ class FPGAPlatform
 
   /**
    * \brief Prepare the chunks of a column.
-   * 
-   * This may or may not include a copy to some on-board memory, 
+   *
+   * This may or may not include a copy to some on-board memory,
    * depending on the type of platform uses.
    * \return the number of bytes prepared for all buffers in this column
    */
   uint64_t prepare_column_chunks(const std::shared_ptr<arrow::Column>& column);
+  uint64_t prepare_column_chunks(const std::vector<std::shared_ptr<arrow::Column>>& columns);
 
   /**
-   * \brief The offset of the first memory-mapped slave register 
+   * \brief The offset of the first memory-mapped slave register
    * argument.
    */
   uint64_t argument_offset();
@@ -100,8 +101,8 @@ class FPGAPlatform
 
   /**
    * \brief Function to organize buffers for the specific FPGA Platform.
-   * 
-   * \param source_buffers A vector of buffer configurations of all 
+   *
+   * \param source_buffers A vector of buffer configurations of all
    *        source buffers to be organized for the FPGA platform.
    * \param dest_buffers A vector to append the buffer configurations
    *        on the FPGA platform for.
@@ -111,15 +112,15 @@ class FPGAPlatform
                                     std::vector<BufConfig>& dest_buffers)=0;
 
   /**
-   * Append a BufConfig vector with all ArrayData buffers that are used 
+   * Append a BufConfig vector with all ArrayData buffers that are used
    * specified by an arrow::Field
    *
-   * This is useful to obtain a flat list of the buffers that are of 
+   * This is useful to obtain a flat list of the buffers that are of
    * interest.
    *
-   * \param array_data    the ArrayData to get the Buffer configuration 
+   * \param array_data    the ArrayData to get the Buffer configuration
    *                      from
-   * \param field         the arrow::Field corresponding to this 
+   * \param field         the arrow::Field corresponding to this
    *                      ArrayData
    * \param config_vector the configuration vector to append
    */

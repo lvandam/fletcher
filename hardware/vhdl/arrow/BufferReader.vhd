@@ -39,7 +39,7 @@ entity BufferReader is
 
     -- Number of beats in a burst step.
     BUS_BURST_STEP_LEN          : natural := 4;
-    
+
     -- Maximum number of beats in a burst.
     BUS_BURST_MAX_LEN           : natural := 16;
 
@@ -352,7 +352,7 @@ begin
       REQ_IN_SLICE                      => false,
       REQ_OUT_SLICE                     => BUS_REQ_SLICE,
       RESP_IN_SLICE                     => false,
-      RESP_OUT_SLICE                    => false --?
+      RESP_OUT_SLICE                    => true --?
     )
     port map (
       clk                               => bus_clk,
@@ -535,4 +535,3 @@ begin
     );
 
 end Behavioral;
-
